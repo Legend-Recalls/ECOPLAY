@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, Leaf, Droplets, Recycle, Zap, Globe } from 'lucide-react';
-
+import { BookOpen, Leaf, Droplets, Recycle, Zap, Globe, ArrowRight } from 'lucide-react';
+import { useGame } from '../contexts/GameContext';
+import EnvironmentalHub from '../components/EnvironmentalHub';
 const Learning = () => {
   const topics = [
     {
@@ -84,13 +85,27 @@ const Learning = () => {
           </p>
         </motion.div>
 
+      {/* Environmental Learning Hub */}
+      </motion.div>
+      
+      {/* Quick Facts Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 1.0 }}
+        className="mb-16"
+      >
+        <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
+          Quick Environmental Facts
+        </h2>
+        
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {topics.map((topic, index) => (
             <motion.div
               key={topic.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
+              transition={{ duration: 0.6, delay: 0.8 + index * 0.1 }}
               whileHover={{ y: -5 }}
               className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden"
             >
@@ -126,6 +141,7 @@ const Learning = () => {
           ))}
         </div>
 
+      </div>
         {/* Additional Learning Resources */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

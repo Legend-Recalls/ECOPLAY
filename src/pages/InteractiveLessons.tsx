@@ -69,6 +69,18 @@ const InteractiveLessons = () => {
       color: 'green',
       ageGroup: 'Kids & Adults',
     },
+    {
+      id: 'life-choices-sim',
+      title: 'Life Choices Sim',
+      description: 'Simulate life choices and see their environmental impact.',
+      icon: Users,
+      difficulty: 'Medium',
+      duration: '15 mins',
+      points: 80,
+      path: '/interactive/life-choices-sim',
+      color: 'blue',
+      ageGroup: 'Teens & Adults',
+    },
   ];
 
   return (

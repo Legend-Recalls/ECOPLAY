@@ -20,6 +20,8 @@ import { RecycleGame } from './components/games/recycle-rush/RecycleGame';
 import Quiz from './components/Quiz';
 import { LessonPage as NutrientCycleLesson } from './components/games/NutrientCycle/src/pages/LessonPage';
 import NutrientCycleLanding from './pages/NutrientCycleLanding';
+import LifeChoicesSimLanding from './pages/LifeChoicesSimLanding';
+import LifeChoicesGame from './components/games/life-choices-sim/pages/Index';
 
 const queryClient = new QueryClient();
 
@@ -48,6 +50,8 @@ function App() {
             <Route path="/interactive/recycle-rush" element={<RecycleGame />} />
             <Route path="/teacher" element={<TeacherDashboard />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/interactive/life-choices-sim" element={<LifeChoicesSimLanding />} />
+            <Route path="/interactive/life-choices-sim/play" element={<LifeChoicesGame />} />
           </Routes>
         </div>
       </Router>

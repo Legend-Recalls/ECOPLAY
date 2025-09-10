@@ -18,19 +18,18 @@ export function LetterGrid({ guessedLetters, word, onLetterClick, disabled }: Le
 
   const getLetterClass = (letter: string) => {
     const status = getLetterStatus(letter);
-    const baseClass = 'w-8 h-8 sm:w-10 sm:h-10 border-2 rounded-lg flex items-center justify-center text-sm sm:text-base font-semibold transition-all duration-200 cursor-pointer';
-    
-    if (disabled || guessedLetters.includes(letter)) {
-      return `${baseClass} cursor-not-allowed opacity-50`;
-    }
+    const baseClass = 'w-8 h-8 sm:w-10 sm:h-10 border-2 rounded-lg flex items-center justify-center text-sm sm:text-base font-semibold transition-all duration-200';
 
     switch (status) {
       case 'correct':
-        return `${baseClass} bg-green-500 text-white border-green-500`;
+        return `${baseClass} bg-green-500 text-white border-green-500 cursor-not-allowed`;
       case 'incorrect':
-        return `${baseClass} bg-gray-500 text-white border-gray-500`;
-      default:
-        return `${baseClass} bg-white border-gray-300 hover:bg-blue-50 hover:border-blue-300`;
+        return `${baseClass} bg-gray-500 text-white border-gray-500 cursor-not-allowed`;
+      default: // 'available'
+        if (disabled) {
+            return `${baseClass} bg-white border-gray-300 text-gray-400 cursor-not-allowed`;
+        }
+        return `${baseClass} bg-white border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-300 cursor-pointer`;
     }
   };
 

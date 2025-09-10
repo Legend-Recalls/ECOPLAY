@@ -71,8 +71,7 @@ const TrashSortingGame = () => {
         }, 1000);
       }
     } else {
-      const correctBin = bins.find(bin => bin.category === draggedItem.category)?.name;
-      showFeedback(false, `Oops! ${draggedItem.name} should go in ${correctBin}!`);
+      showFeedback(false, `Oops! ${draggedItem.name} should not go in ${category}`)
     }
     
     setDraggedItem(null);

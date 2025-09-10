@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}', '!./src/components/games/NutrientCycle/**'],
   theme: {
     container: {
       center: true,
@@ -19,6 +19,7 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          glow: "hsl(var(--primary-glow))"
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -65,6 +66,21 @@ export default {
           warning: "hsl(var(--warning-color))",
           danger: "hsl(var(--danger-color))",
         },
+        /* Energy Source Colors */
+        coal: "hsl(var(--coal))",
+        gas: "hsl(var(--gas))",
+        hydro: "hsl(var(--hydro))",
+        solar: "hsl(var(--solar))",
+        wind: "hsl(var(--wind))",
+        battery: "hsl(var(--battery))",
+        nuclear: "hsl(var(--nuclear))",
+        /* Status Colors */
+        success: "hsl(var(--success))",
+        warning: "hsl(var(--warning))",
+        /* Zone Colors */
+        residential: "hsl(var(--residential))",
+        commercial: "hsl(var(--commercial))",
+        industrial: "hsl(var(--industrial))",
       },
       borderRadius: {
         lg: "var(--radius)",

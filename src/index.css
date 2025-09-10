@@ -2,62 +2,75 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Eco-Arcade Game Design System - All colors MUST be HSL */
+/* Power Grid Simulation Design System
+All colors MUST be HSL.
+*/
 
 @layer base {
   :root {
-    /* Eco-friendly game palette */
-    --background: 200 30% 8%;
-    --foreground: 0 0% 98%;
+    /* Core Layout Colors */
+    --background: 210 25% 8%;
+    --foreground: 210 20% 98%;
 
-    --card: 200 25% 12%;
-    --card-foreground: 0 0% 95%;
+    --card: 210 25% 11%;
+    --card-foreground: 210 20% 98%;
 
-    --popover: 200 25% 12%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 210 25% 11%;
+    --popover-foreground: 210 20% 98%;
 
-    --primary: 142 76% 36%;
-    --primary-foreground: 0 0% 98%;
+    /* Energy Industry Theme */
+    --primary: 195 100% 50%;
+    --primary-foreground: 210 25% 8%;
+    --primary-glow: 195 100% 70%;
 
-    --secondary: 200 30% 18%;
-    --secondary-foreground: 0 0% 90%;
+    --secondary: 210 25% 16%;
+    --secondary-foreground: 210 20% 90%;
 
-    --muted: 200 20% 20%;
-    --muted-foreground: 0 0% 70%;
+    --muted: 210 25% 14%;
+    --muted-foreground: 210 10% 70%;
 
-    --accent: 142 76% 36%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 195 100% 60%;
+    --accent-foreground: 210 25% 8%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    /* Energy Source Colors */
+    --coal: 15 25% 35%;
+    --gas: 25 70% 50%;
+    --hydro: 200 100% 50%;
+    --solar: 50 100% 60%;
+    --wind: 120 60% 50%;
+    --battery: 280 100% 70%;
+    --nuclear: 315 100% 50%;
 
-    --border: 200 30% 18%;
-    --input: 200 30% 18%;
-    --ring: 142 76% 36%;
+    /* Status Colors */
+    --success: 120 60% 50%;
+    --warning: 45 100% 60%;
+    --destructive: 0 70% 60%;
+    --destructive-foreground: 210 20% 98%;
 
-    /* Game-specific colors */
-    --game-bg-start: 200 40% 8%;
-    --game-bg-end: 220 30% 15%;
-    --recycle-bin: 142 76% 36%;
-    --trash-color: 25 95% 53%;
-    --recyclable-color: 217 91% 60%;
-    --success-color: 142 76% 36%;
-    --warning-color: 45 93% 47%;
-    --danger-color: 0 84% 60%;
+    /* Zone Colors */
+    --residential: 260 100% 70%;
+    --commercial: 30 100% 60%;
+    --industrial: 15 70% 50%;
 
-    /* Game gradients */
-    --gradient-bg: linear-gradient(180deg, hsl(var(--game-bg-start)), hsl(var(--game-bg-end)));
-    --gradient-success: linear-gradient(135deg, hsl(var(--success-color)), hsl(142 76% 45%));
-    --gradient-trash: linear-gradient(135deg, hsl(var(--trash-color)), hsl(25 95% 60%));
-    --gradient-recyclable: linear-gradient(135deg, hsl(var(--recyclable-color)), hsl(217 91% 70%));
-
-    /* Animations */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    /* Interactive Elements */
+    --border: 210 25% 20%;
+    --input: 210 25% 16%;
+    --ring: 195 100% 50%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Effects and Animations */
+    --glow-primary: 0 0 20px hsl(var(--primary) / 0.3);
+    --glow-success: 0 0 20px hsl(var(--success) / 0.3);
+    --glow-warning: 0 0 20px hsl(var(--warning) / 0.3);
+    --glow-destructive: 0 0 20px hsl(var(--destructive) / 0.3);
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-energy: linear-gradient(135deg, hsl(var(--hydro)), hsl(var(--solar)));
+    --gradient-panel: linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)));
+
+    --sidebar-background: 210 25% 10%;
 
     --sidebar-foreground: 240 5.3% 26.1%;
 
@@ -120,62 +133,5 @@
 
   body {
     @apply bg-background text-foreground;
-  }
-}
-
-@layer utilities {
-  /* Game-specific utilities */
-  .game-bg {
-    background: var(--gradient-bg);
-  }
-  
-  .trash-gradient {
-    background: var(--gradient-trash);
-  }
-  
-  .recyclable-gradient {
-    background: var(--gradient-recyclable);
-  }
-  
-  .success-gradient {
-    background: var(--gradient-success);
-  }
-  
-  .game-shadow {
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
-  }
-  
-  .pulse-success {
-    animation: pulse-success 0.6s ease-out;
-  }
-  
-  .bounce-error {
-    animation: bounce-error 0.5s ease-out;
-  }
-}
-
-@layer base {
-  @keyframes pulse-success {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); opacity: 0.8; }
-    100% { transform: scale(1); opacity: 1; }
-  }
-  
-  @keyframes bounce-error {
-    0%, 20%, 50%, 80%, 100% { transform: translateX(0); }
-    10% { transform: translateX(-10px); }
-    30% { transform: translateX(10px); }
-    60% { transform: translateX(-5px); }
-    70% { transform: translateX(5px); }
-  }
-  
-  @keyframes fall-down {
-    0% { transform: translateY(-50px) rotate(0deg); opacity: 0; }
-    10% { opacity: 1; }
-    100% { transform: translateY(600px) rotate(360deg); opacity: 1; }
-  }
-  
-  .fall-animation {
-    animation: fall-down linear;
   }
 }

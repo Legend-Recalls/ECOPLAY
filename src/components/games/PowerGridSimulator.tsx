@@ -1,381 +1,249 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, RotateCcw, Zap, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
-import { useGame } from '../../contexts/GameContext';
 
-interface PowerSource {
-  id: string;
-  name: string;
-  capacity: number;
-  cost: number;
-  emissions: number;
-  renewable: boolean;
-  emoji: string;
-  active: boolean;
-}
-
-interface GameStats {
-  demand: number;
-  supply: number;
-  cost: number;
-  emissions: number;
-  stability: number;
-  score: number;
-  level: number;
-}
-
-const powerSources: PowerSource[] = [
-  { id: 'solar', name: 'Solar Panel', capacity: 20, cost: 15, emissions: 0, renewable: true, emoji: '☀️', active: false },
-  { id: 'wind', name: 'Wind Turbine', capacity: 25, cost: 20, emissions: 0, renewable: true, emoji: '💨', active: false },
-  { id: 'hydro', name: 'Hydroelectric', capacity: 40, cost: 30, emissions: 5, renewable: true, emoji: '💧', active: false },
-  { id: 'coal', name: 'Coal Plant', capacity: 60, cost: 25, emissions: 80, renewable: false, emoji: '🏭', active: false },
-  { id: 'gas', name: 'Natural Gas', capacity: 45, cost: 20, emissions: 40, renewable: false, emoji: '🔥', active: false },
-  { id: 'nuclear', name: 'Nuclear Plant', capacity: 80, cost: 50, emissions: 10, renewable: false, emoji: '⚛️', active: false },
-];
+import { useState, useEffect, useRef } from 'react';
+import { PlayerControls } from './power-grid-simulator/PlayerControls';
+import { CityMap } from './power-grid-simulator/CityMap';
+import { MetricsDashboard } from './power-grid-simulator/MetricsDashboard';
+import { TimelineControls } from './power-grid-simulator/TimelineControls';
+import { EventNotifications } from './power-grid-simulator/EventNotifications';
+import { ScorePanel } from './power-grid-simulator/ScorePanel';
+import { AutoAdjustButton } from './power-grid-simulator/AutoAdjustButton';
 
 const PowerGridSimulator = () => {
-  const navigate = useNavigate();
-  const { dispatch } = useGame();
-  const [sources, setSources] = useState<PowerSource[]>(powerSources);
-  const [gameStats, setGameStats] = useState<GameStats>({
-    demand: 100,
-    supply: 0,
-    cost: 0,
-    emissions: 0,
-    stability: 100,
-    score: 0,
-    level: 1,
-  });
-  const [gameTime, setGameTime] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
-  const [gameOver, setGameOver] = useState(false);
-  const [message, setMessage] = useState('');
+  // Timeline state
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState('08:00');
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
 
+  // Generation state
+  const [coalPower, setCoalPower] = useState([250]);
+  const [gasPower, setGasPower] = useState([180]);
+  const [hydroPower, setHydroPower] = useState([120]);
+  const [solarPower, setSolarPower] = useState([90]);
+  const [windPower, setWindPower] = useState([75]);
+
+  // Battery state
+  const [batteryCharge, setBatteryCharge] = useState(false);
+  const [batteryPower, setBatteryPower] = useState([50]);
+
+  // DSM state
+  const [dsmLevel, setDsmLevel] = useState([10]);
+
+  // Tariff state
+  const [residentialTariff, setResidentialTariff] = useState('4.5');
+  const [commercialTariff, setCommercialTariff] = useState('6.2');
+  const [industrialTariff, setIndustrialTariff] = useState('5.8');
+
+  // Real-time simulation data
+  const [timeSeriesData, setTimeSeriesData] = useState<any[]>([]);
+  const [currentHour, setCurrentHour] = useState(8);
+  const [currentMinute, setCurrentMinute] = useState(0);
+  const simulationRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Real-time simulation logic
   useEffect(() => {
-    if (isRunning && !gameOver) {
-      const timer = setInterval(() => {
-        setGameTime(prev => prev + 1);
-        updateDemand();
-        calculateStats();
-        checkGameStatus();
-      }, 2000);
-
-      return () => clearInterval(timer);
+    if (isPlaying) {
+      simulationRef.current = setInterval(() => {
+        setCurrentMinute(prev => {
+          const newMinute = prev + 15;
+          if (newMinute >= 60) {
+            setCurrentHour(prevHour => (prevHour + 1) % 24);
+            return 0;
+          }
+          return newMinute;
+        });
+      }, 1000 / playbackSpeed); // Update every second, scaled by playback speed
+    } else {
+      if (simulationRef.current) {
+        clearInterval(simulationRef.current);
+        simulationRef.current = null;
+      }
     }
-  }, [isRunning, gameOver, sources]);
 
-  const updateDemand = () => {
-    setGameStats(prev => ({
-      ...prev,
-      demand: Math.max(50, prev.demand + (Math.random() - 0.5) * 20),
-    }));
+    return () => {
+      if (simulationRef.current) {
+        clearInterval(simulationRef.current);
+      }
+    };
+  }, [isPlaying, playbackSpeed]);
+
+  // Update current time display
+  useEffect(() => {
+    setCurrentTime(`${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`);
+  }, [currentHour, currentMinute]);
+
+  // Generate realistic time-based values
+  const getTimeBasedSolar = () => {
+    const baseOutput = solarPower[0];
+    const timeOfDay = currentHour + currentMinute / 60;
+    if (timeOfDay < 6 || timeOfDay > 18) return 0;
+    const solarMultiplier = Math.max(0, Math.sin((timeOfDay - 6) * Math.PI / 12));
+    return Math.round(baseOutput * solarMultiplier);
   };
 
-  const calculateStats = () => {
-    const activeSources = sources.filter(s => s.active);
-    const totalSupply = activeSources.reduce((sum, s) => sum + s.capacity, 0);
-    const totalCost = activeSources.reduce((sum, s) => sum + s.cost, 0);
-    const totalEmissions = activeSources.reduce((sum, s) => sum + s.emissions, 0);
-    
-    const supplyDemandRatio = totalSupply / gameStats.demand;
-    const stability = Math.min(100, Math.max(0, supplyDemandRatio * 100));
-    
-    let scoreChange = 0;
-    if (stability > 80) scoreChange += 10;
-    if (totalEmissions < 50) scoreChange += 5;
-    if (supplyDemandRatio > 0.9 && supplyDemandRatio < 1.1) scoreChange += 5;
-
-    setGameStats(prev => ({
-      ...prev,
-      supply: totalSupply,
-      cost: totalCost,
-      emissions: totalEmissions,
-      stability,
-      score: prev.score + scoreChange,
-    }));
+  const getTimeBasedWind = () => {
+    const baseOutput = windPower[0];
+    const windVariability = 0.6 + Math.sin((currentHour * 60 + currentMinute) / 1440 * 2 * Math.PI) * 0.4; // Use simulation time for deterministic wind
+    return Math.round(baseOutput * windVariability);
   };
 
-  const checkGameStatus = () => {
-    if (gameStats.stability < 20) {
-      setGameOver(true);
-      setMessage('Grid collapsed! The power went out.');
-    } else if (gameTime >= 60 && gameStats.score > 200) {
-      setGameOver(true);
-      setMessage('Congratulations! You successfully managed the power grid!');
-      dispatch({ type: 'ADD_ECO_POINTS', payload: 75 });
-      dispatch({ type: 'COMPLETE_LESSON', payload: 'power-grid' });
+  const getTimeBasedDemand = () => {
+    const baseDemands = { residential: 120, commercial: 85, industrial: 180 };
+    const timeOfDay = currentHour + currentMinute / 60;
+    
+    // Demand curves - peak in evening for residential, business hours for commercial
+    const residentialMultiplier = timeOfDay < 6 ? 0.6 : timeOfDay < 9 ? 0.8 : 
+                                 timeOfDay < 17 ? 0.7 : timeOfDay < 22 ? 1.2 : 0.8;
+    const commercialMultiplier = timeOfDay < 8 ? 0.4 : timeOfDay < 18 ? 1.0 : 0.3;
+    const industrialMultiplier = timeOfDay < 6 ? 0.9 : timeOfDay < 22 ? 1.0 : 0.8;
+    
+    return {
+      residential: Math.round(baseDemands.residential * residentialMultiplier * (1 - dsmLevel[0]/100)),
+      commercial: Math.round(baseDemands.commercial * commercialMultiplier * (1 - dsmLevel[0]/100)),
+      industrial: Math.round(baseDemands.industrial * industrialMultiplier * (1 - dsmLevel[0]/100))
+    };
+  };
+
+  // Real-time generation values
+  const realTimeGeneration = {
+    coal: coalPower[0],
+    gas: gasPower[0],
+    hydro: hydroPower[0],
+    solar: getTimeBasedSolar(),
+    wind: getTimeBasedWind(),
+    battery: batteryCharge ? -batteryPower[0] : batteryPower[0]
+  };
+
+  const realTimeDemand = getTimeBasedDemand();
+
+  // Update time series data
+  useEffect(() => {
+    if (isPlaying) {
+      const newDataPoint = {
+        time: `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`,
+        hour: currentHour + currentMinute / 60,
+        supply: Object.values(realTimeGeneration).reduce((sum, val) => sum + Math.abs(val), 0),
+        demand: Object.values(realTimeDemand).reduce((sum, val) => sum + val, 0),
+        coal: realTimeGeneration.coal,
+        gas: realTimeGeneration.gas,
+        hydro: realTimeGeneration.hydro,
+        solar: realTimeGeneration.solar,
+        wind: realTimeGeneration.wind,
+        battery: realTimeGeneration.battery,
+        residentialDemand: realTimeDemand.residential,
+        commercialDemand: realTimeDemand.commercial,
+        industrialDemand: realTimeDemand.industrial,
+        frequency: 50.0,
+        carbonEmissions: realTimeGeneration.coal * 0.9 + realTimeGeneration.gas * 0.4,
+        cost: realTimeGeneration.coal * 5 + realTimeGeneration.gas * 4 + realTimeGeneration.hydro * 1.5 + realTimeGeneration.solar * 2 + realTimeGeneration.wind * 1.8
+      };
+
+      setTimeSeriesData(prev => [...prev.slice(-23), newDataPoint]); // Keep last 24 data points
     }
-  };
+  }, [currentHour, currentMinute, isPlaying, coalPower, gasPower, hydroPower, solarPower, windPower, batteryPower, batteryCharge, dsmLevel]);
 
-  const togglePowerSource = (id: string) => {
-    setSources(sources.map(source => 
-      source.id === id ? { ...source, active: !source.active } : source
-    ));
+  // Simulation data for other components
+  const simulationData = {
+    generation: realTimeGeneration,
+    demand: realTimeDemand,
+    dsm: dsmLevel[0],
+    tariffs: {
+      residential: parseFloat(residentialTariff),
+      commercial: parseFloat(commercialTariff),
+      industrial: parseFloat(industrialTariff)
+    },
+    timeSeriesData,
+    currentTime: { hour: currentHour, minute: currentMinute }
   };
-
-  const resetGame = () => {
-    setSources(powerSources.map(s => ({ ...s, active: false })));
-    setGameStats({
-      demand: 100,
-      supply: 0,
-      cost: 0,
-      emissions: 0,
-      stability: 100,
-      score: 0,
-      level: 1,
-    });
-    setGameTime(0);
-    setIsRunning(false);
-    setGameOver(false);
-    setMessage('');
-  };
-
-  const getStabilityColor = () => {
-    if (gameStats.stability > 70) return 'emerald';
-    if (gameStats.stability > 40) return 'yellow';
-    return 'red';
-  };
-
-  if (gameOver) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50 py-4">
-        <div className="max-w-2xl mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-8"
-          >
-            <div className="text-8xl mb-4">⚡</div>
-            <h2 className="text-4xl font-bold text-yellow-600 mb-4">
-              {gameStats.score > 200 ? 'Grid Master!' : 'Game Over'}
-            </h2>
-            <p className="text-xl text-gray-600 mb-6">
-              {message} Final Score: {gameStats.score}
-            </p>
-            
-            <div className="bg-white rounded-xl p-6 shadow-lg mb-8">
-              <h3 className="text-lg font-bold text-gray-800 mb-4">Final Stats:</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-blue-50 rounded-lg">
-                  <div className="text-xl font-bold text-blue-600">{Math.round(gameStats.supply)}</div>
-                  <div className="text-sm text-blue-700">Supply (MW)</div>
-                </div>
-                <div className="text-center p-3 bg-green-50 rounded-lg">
-                  <div className="text-xl font-bold text-green-600">{Math.round(gameStats.emissions)}</div>
-                  <div className="text-sm text-green-700">Emissions</div>
-                </div>
-                <div className="text-center p-3 bg-purple-50 rounded-lg">
-                  <div className="text-xl font-bold text-purple-600">${gameStats.cost}</div>
-                  <div className="text-sm text-purple-700">Cost</div>
-                </div>
-                <div className="text-center p-3 bg-orange-50 rounded-lg">
-                  <div className="text-xl font-bold text-orange-600">{Math.round(gameStats.stability)}%</div>
-                  <div className="text-sm text-orange-700">Stability</div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex justify-center space-x-4">
-              <button
-                onClick={resetGame}
-                className="bg-yellow-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-yellow-600 transition-colors"
-              >
-                Play Again
-              </button>
-              <button
-                onClick={() => navigate('/interactive')}
-                className="bg-white text-yellow-600 border-2 border-yellow-500 px-6 py-3 rounded-xl font-semibold hover:bg-yellow-50 transition-colors"
-              >
-                More Lessons
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50 py-4">
-      <div className="max-w-6xl mx-auto px-4">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <button
-            onClick={() => navigate('/interactive')}
-            className="flex items-center space-x-2 text-gray-600 hover:text-yellow-600 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span>Back to Lessons</span>
-          </button>
+    <div className="min-h-screen bg-background text-foreground overflow-hidden">
+      {/* Header */}
+      <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6">
+        <div className="flex items-center gap-4">
+          <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary-glow rounded-lg flex items-center justify-center">
+            <span className="text-primary-foreground font-bold text-sm">⚡</span>
+          </div>
+          <h1 className="text-xl font-bold">Power Grid Simulator</h1>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <AutoAdjustButton 
+            simulationData={simulationData}
+            setters={{
+              setCoalPower,
+              setGasPower,
+              setHydroPower,
+              setSolarPower,
+              setWindPower,
+              setBatteryPower,
+              setBatteryCharge,
+              setDsmLevel,
+              setResidentialTariff,
+              setCommercialTariff,
+              setIndustrialTariff
+            }}
+          />
+          <ScorePanel simulationData={simulationData} />
+        </div>
+      </header>
+
+      {/* Main Layout */}
+      <div className="flex h-[calc(100vh-4rem)]">
+        {/* Left Sidebar - Player Controls */}
+        <div className="w-80 bg-sidebar border-r border-border overflow-y-auto">
+          <PlayerControls 
+            coalPower={coalPower}
+            setCoalPower={setCoalPower}
+            gasPower={gasPower}
+            setGasPower={setGasPower}
+            hydroPower={hydroPower}
+            setHydroPower={setHydroPower}
+            solarPower={solarPower}
+            setSolarPower={setSolarPower}
+            windPower={windPower}
+            setWindPower={setWindPower}
+            batteryCharge={batteryCharge}
+            setBatteryCharge={setBatteryCharge}
+            batteryPower={batteryPower}
+            setBatteryPower={setBatteryPower}
+            dsmLevel={dsmLevel}
+            setDsmLevel={setDsmLevel}
+            residentialTariff={residentialTariff}
+            setResidentialTariff={setResidentialTariff}
+            commercialTariff={commercialTariff}
+            setCommercialTariff={setCommercialTariff}
+            industrialTariff={industrialTariff}
+            setIndustrialTariff={setIndustrialTariff}
+          />
+        </div>
+
+        {/* Main Center Panel - City Map */}
+        <div className="flex-1 flex flex-col">
+          <div className="flex-1 min-h-0 bg-muted/20 overflow-hidden bg-gradient-to-br from-muted/30 to-muted/10">
+            <CityMap simulationData={simulationData} />
+          </div>
           
-          <div className="flex items-center space-x-4">
-            <div className="bg-white rounded-full px-4 py-2 shadow-md">
-              <span className="text-yellow-600 font-bold">Score: {gameStats.score}</span>
-            </div>
-            <div className="bg-white rounded-full px-4 py-2 shadow-md">
-              <span className="text-gray-600">Time: {gameTime}s</span>
-            </div>
-            <button
-              onClick={resetGame}
-              className="p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-shadow"
-            >
-              <RotateCcw className="w-5 h-5 text-gray-600" />
-            </button>
+          {/* Bottom Panel - Timeline Controls */}
+          <div className="h-20 bg-card border-t border-border">
+            <TimelineControls 
+              isPlaying={isPlaying}
+              setIsPlaying={setIsPlaying}
+              currentTime={currentTime}
+              setCurrentTime={setCurrentTime}
+              playbackSpeed={playbackSpeed}
+              setPlaybackSpeed={setPlaybackSpeed}
+            />
           </div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
-        >
-          <h1 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4">
-            ⚡ Power Grid Simulator
-          </h1>
-          <p className="text-lg text-gray-600 mb-4">
-            Balance energy supply and demand while minimizing emissions!
-          </p>
-          
-          {!isRunning && (
-            <button
-              onClick={() => setIsRunning(true)}
-              className="bg-yellow-500 text-white px-8 py-3 rounded-xl font-semibold hover:bg-yellow-600 transition-colors"
-            >
-              Start Simulation
-            </button>
-          )}
-        </motion.div>
-
-        {isRunning && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Stats Panel */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                <h2 className="text-xl font-bold text-gray-800 mb-4">Grid Status</h2>
-                
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-medium text-gray-600">Demand</span>
-                      <span className="text-sm font-bold text-gray-800">{Math.round(gameStats.demand)} MW</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-blue-500 h-2 rounded-full transition-all duration-500"
-                        style={{ width: `${(gameStats.demand / 200) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-medium text-gray-600">Supply</span>
-                      <span className="text-sm font-bold text-gray-800">{Math.round(gameStats.supply)} MW</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-emerald-500 h-2 rounded-full transition-all duration-500"
-                        style={{ width: `${(gameStats.supply / 200) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-medium text-gray-600">Stability</span>
-                      <span className={`text-sm font-bold text-${getStabilityColor()}-600`}>
-                        {Math.round(gameStats.stability)}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className={`bg-${getStabilityColor()}-500 h-2 rounded-full transition-all duration-500`}
-                        style={{ width: `${gameStats.stability}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4 mt-6">
-                  <div className="text-center p-3 bg-red-50 rounded-lg">
-                    <div className="text-lg font-bold text-red-600">{Math.round(gameStats.emissions)}</div>
-                    <div className="text-xs text-red-700">Emissions</div>
-                  </div>
-                  <div className="text-center p-3 bg-green-50 rounded-lg">
-                    <div className="text-lg font-bold text-green-600">${gameStats.cost}</div>
-                    <div className="text-xs text-green-700">Cost/hour</div>
-                  </div>
-                </div>
-                
-                {gameStats.stability < 50 && (
-                  <div className="flex items-center space-x-2 mt-4 p-3 bg-red-100 rounded-lg">
-                    <AlertTriangle className="w-5 h-5 text-red-600" />
-                    <span className="text-sm text-red-700 font-medium">
-                      Grid becoming unstable!
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Power Sources */}
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-2xl shadow-lg p-6">
-                <h2 className="text-xl font-bold text-gray-800 mb-4">Power Sources</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {sources.map((source) => (
-                    <motion.div
-                      key={source.id}
-                      whileHover={{ scale: 1.02 }}
-                      onClick={() => togglePowerSource(source.id)}
-                      className={`p-4 rounded-xl cursor-pointer transition-all border-2 ${
-                        source.active
-                          ? 'bg-emerald-50 border-emerald-500'
-                          : 'bg-gray-50 border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-2xl">{source.emoji}</span>
-                          <span className="font-medium text-gray-800">{source.name}</span>
-                        </div>
-                        {source.renewable && (
-                          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                            Renewable
-                          </span>
-                        )}
-                      </div>
-                      
-                      <div className="text-sm text-gray-600 space-y-1">
-                        <div className="flex justify-between">
-                          <span>Capacity:</span>
-                          <span className="font-medium">{source.capacity} MW</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Cost:</span>
-                          <span className="font-medium">${source.cost}/hr</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Emissions:</span>
-                          <span className="font-medium">{source.emissions} CO²</span>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-3">
-                        <div className={`w-full h-2 rounded-full ${
-                          source.active ? 'bg-emerald-500' : 'bg-gray-300'
-                        }`} />
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Right Sidebar - Metrics Dashboard */}
+        <div className="w-96 bg-sidebar border-l border-border overflow-y-auto">
+          <MetricsDashboard simulationData={simulationData} />
+        </div>
       </div>
+
+      {/* Event Notifications */}
+      <EventNotifications isPlaying={isPlaying} />
     </div>
   );
 };

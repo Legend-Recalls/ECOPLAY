@@ -10,7 +10,10 @@ import {
   Home,
   X,
   ArrowRight,
-  BookOpen
+  BookOpen,
+  Wind,
+  Waves,
+  Recycle
 } from 'lucide-react';
 
 interface Topic {
@@ -119,6 +122,54 @@ const topics: Topic[] = [
         'Sustainable living involves making choices that reduce our environmental impact while maintaining quality of life. This approach considers the long-term effects of our consumption patterns, energy use, transportation choices, and waste generation. The goal is to live within Earth\'s ecological limits while ensuring resources remain available for future generations. Sustainable practices often save money, improve health, and create more resilient communities.',
         'Key areas of sustainable living include energy efficiency through better insulation, LED lighting, and smart appliances; sustainable transportation via walking, cycling, public transit, and electric vehicles; responsible consumption by buying local, organic, and durable products; waste reduction through the 5 R\'s (Refuse, Reduce, Reuse, Recycle, Rot); and water conservation through efficient fixtures and mindful usage habits.',
         'The transition to sustainable living can start with small changes that gradually become habits. Simple actions like meal planning to reduce food waste, choosing reusable items over disposables, supporting businesses with strong environmental practices, and learning new skills like gardening or repair work can significantly reduce environmental impact. Community involvement through local environmental groups, sharing resources with neighbors, and advocating for sustainable policies amplifies individual efforts and creates positive social change.'
+      ]
+    },
+    quizCategory: 'general'
+  },
+  {
+    id: 'air-pollution',
+    title: 'Air Pollution & Solutions',
+    description: 'Tackling air quality issues and breathing cleaner air',
+    icon: Wind,
+    color: 'gray',
+    theory: {
+      title: 'Combating Air Pollution for Healthier Communities',
+      content: [
+        'Air pollution consists of harmful substances released into the atmosphere, including particulate matter, nitrogen oxides, sulfur dioxide, carbon monoxide, and volatile organic compounds. These pollutants come from various sources: vehicle emissions, industrial processes, power plants, agricultural activities, and natural events like wildfires. Poor air quality affects billions of people worldwide, causing respiratory diseases, cardiovascular problems, and premature deaths.',
+        'The health impacts of air pollution are severe and far-reaching. Fine particulate matter (PM2.5) can penetrate deep into lungs and enter the bloodstream, causing asthma, lung cancer, heart disease, and stroke. Children and elderly people are particularly vulnerable. Air pollution also damages ecosystems, reduces crop yields, and contributes to acid rain that harms forests and aquatic environments.',
+        'Solutions to air pollution require coordinated efforts at multiple levels. Governments can implement stricter emission standards, promote clean transportation, and invest in renewable energy. Cities can create low-emission zones, improve public transit, and increase green spaces. Individuals can reduce their contribution by using public transportation, choosing electric or hybrid vehicles, supporting clean energy, and advocating for stronger environmental policies. Technology innovations like electric vehicles, cleaner industrial processes, and air purification systems are making significant progress in reducing air pollution.'
+      ]
+    },
+    quizCategory: 'general'
+  },
+  {
+    id: 'ocean',
+    title: 'Ocean Conservation',
+    description: 'Protecting marine ecosystems and reducing ocean pollution',
+    icon: Waves,
+    color: 'blue',
+    theory: {
+      title: 'Safeguarding Our Ocean Ecosystems',
+      content: [
+        'Oceans cover 71% of Earth\'s surface and contain 97% of the planet\'s water, making them crucial for climate regulation, weather patterns, and supporting marine life. Ocean ecosystems provide essential services including oxygen production (50% of Earth\'s oxygen comes from marine phytoplankton), carbon sequestration, food security for billions of people, and economic benefits through fishing, tourism, and transportation. However, human activities are severely threatening ocean health.',
+        'Major threats to ocean ecosystems include plastic pollution, chemical contamination, overfishing, habitat destruction, and ocean acidification caused by increased CO2 absorption. Plastic waste, particularly single-use items, creates massive garbage patches and microplastics that enter the food chain. Overfishing has depleted many fish populations, while coastal development destroys critical habitats like coral reefs, mangroves, and seagrass beds. Climate change is warming and acidifying oceans, causing coral bleaching and disrupting marine food webs.',
+        'Ocean conservation requires global cooperation and immediate action. Solutions include reducing plastic use, supporting sustainable fishing practices, creating marine protected areas, and addressing climate change. Individuals can help by reducing plastic consumption, choosing sustainable seafood, participating in beach cleanups, and supporting organizations working to protect marine environments. International agreements like the Paris Climate Accord and efforts to create a global plastic pollution treaty are essential for coordinated ocean protection efforts.'
+      ]
+    },
+    quizCategory: 'general'
+  },
+  {
+    id: 'waste',
+    title: 'Waste Management & Recycling',
+    description: 'Reducing waste and creating circular economy solutions',
+    icon: Recycle,
+    color: 'green',
+    theory: {
+      title: 'Building a Circular Economy Through Waste Management',
+      content: [
+        'Waste management involves the collection, treatment, and disposal of waste materials generated by human activities. Traditional linear economy models follow a "take-make-dispose" pattern that leads to resource depletion and environmental degradation. In contrast, circular economy principles aim to eliminate waste through better design, reuse, recycling, and regeneration. Effective waste management reduces environmental pollution, conserves natural resources, and creates economic opportunities.',
+        'The waste hierarchy prioritizes waste management strategies: prevention (reducing waste generation), reuse (finding new purposes for items), recycling (processing materials into new products), recovery (extracting energy from waste), and disposal (safe elimination as a last resort). Recycling alone can significantly reduce environmental impact - recycling one ton of paper saves 17 trees, 7,000 gallons of water, and enough energy to power an average home for six months.',
+        'Successful waste management requires participation from individuals, businesses, and governments. Communities can implement comprehensive recycling programs, composting initiatives, and waste reduction education. Businesses can adopt sustainable packaging, design products for durability and repairability, and implement take-back programs. Individuals can practice the 5 R\'s (Refuse, Reduce, Reuse, Recycle, Rot), support companies with sustainable practices, and advocate for better waste management policies. Innovation in biodegradable materials, chemical recycling, and waste-to-energy technologies continues to improve our ability to manage waste sustainably.'
       ]
     },
     quizCategory: 'general'

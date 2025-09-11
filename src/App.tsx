@@ -22,6 +22,7 @@ import { LessonPage as NutrientCycleLesson } from './components/games/NutrientCy
 import NutrientCycleLanding from './pages/NutrientCycleLanding';
 import LifeChoicesSimLanding from './pages/LifeChoicesSimLanding';
 import LifeChoicesGame from './components/games/life-choices-sim/pages/Index';
+import EcoSortAI from './pages/EcoSortAI';
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ function App() {
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/interactive/life-choices-sim" element={<LifeChoicesSimLanding />} />
             <Route path="/interactive/life-choices-sim/play" element={<LifeChoicesGame />} />
+            <Route path="/interactive/ecosort-ai" element={<EcoSortAI />} />
           </Routes>
         </div>
       </Router>

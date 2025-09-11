@@ -81,6 +81,18 @@ const InteractiveLessons = () => {
       color: 'blue',
       ageGroup: 'Teens & Adults',
     },
+    {
+      id: 'ecosort-ai',
+      title: 'EcoSort AI',
+      description: 'Use your camera to identify waste and learn how to dispose of it correctly.',
+      icon: Recycle, // Using the existing Recycle icon
+      difficulty: 'Beginner',
+      duration: '5 mins',
+      points: 20,
+      path: '/interactive/ecosort-ai',
+      color: 'blue',
+      ageGroup: 'All Ages',
+    },
   ];
 
   return (
